@@ -2,7 +2,7 @@ package sender
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"time"
 
 	"gridcore-agent/internal/collector"
@@ -17,6 +17,8 @@ type Sender struct {
 }
 
 func New(cfg *config.Config) *Sender {
+	collector.InitCPU()
+	time.Sleep(1 * time.Second) // Warm up CPU stats to avoid 0% on first report
 	client := resty.New()
 	client.SetTimeout(5 * time.Second)
 	return &Sender{
@@ -45,7 +47,7 @@ func (s *Sender) Start() {
 func (s *Sender) report() {
 	data, err := collector.Collect()
 	if err != nil {
-		fmt.Printf("error collecting data: %v\n", err)
+		log.Printf("Error collecting data: %v\n", err)
 		return
 	}
 
@@ -53,7 +55,7 @@ func (s *Sender) report() {
 
 	if s.cfg.Debug {
 		jsonData, _ := json.MarshalIndent(data, "", "  ")
-		fmt.Printf("[DEBUG] Sending Payload:\n%s\n", string(jsonData))
+		log.Printf("[DEBUG] Sending Payload:\n%s\n", string(jsonData))
 	}
 
 	resp, err := s.client.R().
@@ -63,11 +65,11 @@ func (s *Sender) report() {
 		Post(s.cfg.ServerURL)
 
 	if err != nil {
-		fmt.Printf("Error sending report: %v\n", err)
+		log.Printf("Error sending report: %v\n", err)
 		return
 	}
 
 	if s.cfg.Debug {
-		fmt.Printf("Report sent. Status: %s\n", resp.Status())
+		log.Printf("Report sent. Status: %s\n", resp.Status())
 	}
 }

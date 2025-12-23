@@ -14,3 +14,7 @@ func GetCPUPercent() (float64, error) {
 	}
 	return 0, nil
 }
+
+func InitCPU() {
+	cpu.Percent(0, false)
+}

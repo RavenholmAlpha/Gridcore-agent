@@ -10,6 +10,7 @@ import (
 
 type Data struct {
 	UUID      string                 `json:"uuid"`
+	Host      *HostInfo              `json:"host"`
 	CPU       float64                `json:"cpu_percent"`
 	Memory    *mem.VirtualMemoryStat `json:"memory"`
 	Disk      *disk.UsageStat        `json:"disk"`
@@ -32,7 +33,10 @@ func Collect() (*Data, error) {
 		return nil, err
 	}
 
+	hostVal, _ := GetHostInfo() // Ignore error for now
+
 	return &Data{
+		Host:      hostVal,
 		CPU:       cpuVal,
 		Memory:    memVal,
 		Disk:      diskVal,

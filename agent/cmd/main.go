@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -21,9 +20,9 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	fmt.Printf("Starting Gridcore Agent...\n")
-	fmt.Printf("Server: %s\n", cfg.ServerURL)
-	fmt.Printf("Interval: %d seconds\n", cfg.Interval)
+	log.Printf("Starting Gridcore Agent...\n")
+	log.Printf("Server: %s\n", cfg.ServerURL)
+	log.Printf("Interval: %d seconds\n", cfg.Interval)
 
 	s := sender.New(cfg)
 
@@ -35,5 +34,5 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	fmt.Println("Shutting down agent...")
+	log.Println("Shutting down agent...")
 }
