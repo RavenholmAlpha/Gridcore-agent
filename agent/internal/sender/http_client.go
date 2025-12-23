@@ -12,18 +12,22 @@ import (
 )
 
 type Sender struct {
-	client *resty.Client
-	cfg    *config.Config
+	client    *resty.Client
+	cfg       *config.Config
+	collector *collector.Collector
 }
 
 func New(cfg *config.Config) *Sender {
 	collector.InitCPU()
 	time.Sleep(1 * time.Second) // Warm up CPU stats to avoid 0% on first report
+
 	client := resty.New()
 	client.SetTimeout(5 * time.Second)
+
 	return &Sender{
-		client: client,
-		cfg:    cfg,
+		client:    client,
+		cfg:       cfg,
+		collector: collector.New(),
 	}
 }
 
@@ -45,7 +49,7 @@ func (s *Sender) Start() {
 }
 
 func (s *Sender) report() {
-	data, err := collector.Collect()
+	data, err := s.collector.Collect()
 	if err != nil {
 		log.Printf("Error collecting data: %v\n", err)
 		return
