@@ -34,7 +34,14 @@
 *   **日志**: 使用 `log` 标准库打印带时间戳的日志，Debug 模式下打印发送的 JSON 内容。
 
 ### 3.3 配置管理 (Config)
-Agent 启动时读取 `config.yaml` 或命令行参数。如果 `uuid` 为空，会自动生成并回写到配置文件。
+Agent 启动时读取 `config.yaml` 或命令行参数。
+*   **UUID**: 必须提供 UUID，否则无法启动。
+*   **命令行参数**: 支持 `--uuid` 参数，用于指定或覆盖配置文件中的 UUID，并会持久化保存到配置文件中。
+
+**启动命令示例**:
+```bash
+./gridcore-agent --uuid "your-server-provided-uuid"
+```
 
 **示例配置文件**:
 ```yaml

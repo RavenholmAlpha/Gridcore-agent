@@ -3,7 +3,6 @@ package config
 import (
 	"os"
 
-	"github.com/google/uuid"
 	"gopkg.in/yaml.v3"
 )
 
@@ -26,17 +25,13 @@ func Load(path string) (*Config, error) {
 		return nil, err
 	}
 
-	if cfg.UUID == "" {
-		cfg.UUID = uuid.New().String()
-		// Write back to file
-		newData, err := yaml.Marshal(&cfg)
-		if err != nil {
-			return nil, err
-		}
-		if err := os.WriteFile(path, newData, 0644); err != nil {
-			return nil, err
-		}
-	}
-
 	return &cfg, nil
+}
+
+func (c *Config) Save(path string) error {
+	data, err := yaml.Marshal(c)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, 0644)
 }
