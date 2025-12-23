@@ -9,6 +9,7 @@ import (
 )
 
 type Data struct {
+	UUID      string                 `json:"uuid"`
 	CPU       float64                `json:"cpu_percent"`
 	Memory    *mem.VirtualMemoryStat `json:"memory"`
 	Disk      *disk.UsageStat        `json:"disk"`

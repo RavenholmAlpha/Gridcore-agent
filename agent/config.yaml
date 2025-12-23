@@ -1,4 +1,5 @@
-server_url: "http://monitor.example.com/api/agent/report"
-secret: "my-secure-secret-token"
-interval: 2  # 上报间隔(秒)
+server_url: http://monitor.example.com/api/agent/report
+secret: my-secure-secret-token
+interval: 2
 debug: false
+uuid: 89707b6d-3206-48a0-afb0-ddd8be886af3
