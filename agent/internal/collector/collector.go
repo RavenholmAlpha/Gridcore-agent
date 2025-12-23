@@ -6,24 +6,26 @@ import (
 )
 
 type Data struct {
-	UUID   string  `json:"uuid"`
-	Name   string  `json:"name"`
-	OS     string  `json:"os"`
-	Uptime uint64  `json:"uptime"`
-	CPU    float64 `json:"cpu"`
-	RAM    float64 `json:"ram"`
-	Disk   float64 `json:"disk"`
-	NetIn  uint64  `json:"net_in"`
-	NetOut uint64  `json:"net_out"`
-	Load1  float64 `json:"load_1"`
-	Load5  float64 `json:"load_5"`
-	Load15 float64 `json:"load_15"`
+	UUID     string  `json:"uuid"`
+	Name     string  `json:"name"`
+	OS       string  `json:"os"`
+	Uptime   uint64  `json:"uptime"`
+	CPU      float64 `json:"cpu"`
+	RAM      float64 `json:"ram"`
+	Disk     float64 `json:"disk"`
+	NetIn    uint64  `json:"net_in"`
+	NetOut   uint64  `json:"net_out"`
+	PublicIP string  `json:"public_ip"`
+	Load1    float64 `json:"load_1"`
+	Load5    float64 `json:"load_5"`
+	Load15   float64 `json:"load_15"`
 }
 
 type Collector struct {
 	prevNetIn   uint64
 	prevNetOut  uint64
 	prevNetTime time.Time
+	publicIP    string
 }
 
 func New() *Collector {
@@ -72,15 +74,20 @@ func (c *Collector) Collect() (*Data, error) {
 	c.prevNetOut = totalOut
 	c.prevNetTime = now
 
+	if c.publicIP == "" {
+		c.publicIP = GetPublicIP()
+	}
+
 	hostVal, _ := GetHostInfo()
 	loadVal, _ := GetLoadAvg()
 
 	data := &Data{
-		CPU:    cpuVal,
-		RAM:    memVal.UsedPercent,
-		Disk:   diskVal.UsedPercent,
-		NetIn:  netInRate,
-		NetOut: netOutRate,
+		CPU:      cpuVal,
+		RAM:      memVal.UsedPercent,
+		Disk:     diskVal.UsedPercent,
+		NetIn:    netInRate,
+		NetOut:   netOutRate,
+		PublicIP: c.publicIP,
 	}
 
 	if hostVal != nil {
