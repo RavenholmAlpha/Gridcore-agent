@@ -1,6 +1,7 @@
 package sender
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -46,6 +47,13 @@ func (s *Sender) report() {
 	if err != nil {
 		fmt.Printf("Error collecting data: %v\n", err)
 		return
+	}
+
+	data.UUID = s.cfg.UUID
+
+	if s.cfg.Debug {
+		jsonData, _ := json.MarshalIndent(data, "", "  ")
+		fmt.Printf("[DEBUG] Sending Payload:\n%s\n", string(jsonData))
 	}
 
 	resp, err := s.client.R().
