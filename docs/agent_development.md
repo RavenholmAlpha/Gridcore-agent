@@ -16,13 +16,14 @@
 ## 3. 功能实现细节
 
 ### 3.1 采集模块 (Collector)
-封装 `gopsutil` 调用，提供统一的数据结构。
+封装 `gopsutil` 调用，提供扁平化的数据结构，并计算网络速率。
 
-*   **CPU**: 采集使用率百分比 (`cpu.Percent`)。
-*   **Memory**: 采集已用内存、总内存、使用率 (`mem.VirtualMemory`)。
+*   **Host**: 主机名、操作系统、内核版本、运行时间 (`uptime`)。
+*   **CPU**: 采集使用率百分比 (`cpu.Percent`)，启动时进行预热防止 0 值。
+*   **Memory**: 采集内存使用率 (`mem.VirtualMemory`)。
 *   **Disk**: 采集根分区 (`/`) 或指定分区的使用率 (`disk.Usage`)。
-*   **Network**: 采集指定网卡或所有网卡的流量统计 (`net.IOCounters`)。
-    *   *注意*: 流量速率需要计算两次采集之间的差值除以时间间隔。
+*   **Network**: 采集实时网络速率 (Bytes/s)，通过计算两次采集的差值实现。
+*   **Load**: 采集系统负载 (1/5/15分钟)，Windows 下可能不可用。
 
 ### 3.2 上报模块 (Sender)
 负责将采集到的数据序列化为 JSON 并发送给服务端。
@@ -30,9 +31,10 @@
 *   **周期性上报**: 使用 `time.NewTicker` 实现定时任务（默认 2 秒）。
 *   **断网重连**: 如果上报失败，记录错误日志，但**不应**退出程序，等待下一次 Ticker 继续尝试。
 *   **鉴权**: 在 HTTP Header 中添加 `Authorization: Bearer <Secret>`。
+*   **日志**: 使用 `log` 标准库打印带时间戳的日志，Debug 模式下打印发送的 JSON 内容。
 
 ### 3.3 配置管理 (Config)
-Agent 启动时读取 `config.yaml` 或命令行参数。
+Agent 启动时读取 `config.yaml` 或命令行参数。如果 `uuid` 为空，会自动生成并回写到配置文件。
 
 **示例配置文件**:
 ```yaml
@@ -40,6 +42,25 @@ server_url: "http://monitor.example.com/api/agent/report"
 secret: "my-secure-secret-token"
 interval: 2  # 上报间隔(秒)
 debug: false
+uuid: "550e8400-e29b-41d4-a716-446655440000" # 自动生成
+```
+
+**上报数据格式 (JSON)**:
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Web-Server-01",
+  "os": "Ubuntu 22.04.1 LTS",
+  "uptime": 3600,
+  "cpu": 12.5,
+  "ram": 45.2,
+  "disk": 60.1,
+  "net_in": 10240,
+  "net_out": 20480,
+  "load_1": 0.5,
+  "load_5": 0.4,
+  "load_15": 0.3
+}
 ```
 
 ## 4. 目录结构
@@ -49,9 +70,13 @@ agent/
 │   └── main.go         # 程序入口
 ├── internal/
 │   ├── collector/      # 采集逻辑包
+│   │   ├── collector.go # 核心采集逻辑与状态管理
 │   │   ├── cpu.go
 │   │   ├── mem.go
-│   │   └── disk.go
+│   │   ├── disk.go
+│   │   ├── net.go
+│   │   ├── host.go     # 主机信息采集
+│   │   └── load.go     # 负载采集
 │   ├── sender/         # 发送逻辑包
 │   │   └── http_client.go
 │   └── config/         # 配置加载
