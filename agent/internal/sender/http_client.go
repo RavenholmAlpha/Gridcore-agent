@@ -45,7 +45,7 @@ func (s *Sender) Start() {
 func (s *Sender) report() {
 	data, err := collector.Collect()
 	if err != nil {
-		fmt.Printf("Error collecting data: %v\n", err)
+		fmt.Printf("error collecting data: %v\n", err)
 		return
 	}
 
