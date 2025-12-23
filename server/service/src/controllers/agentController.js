@@ -2,7 +2,7 @@ const { Server, Metric } = require('../models');
 
 const report = async (req, res) => {
   try {
-    const { uuid, name, os, cpu, ram, disk, net_in, net_out, uptime } = req.body;
+    const { uuid, name, os, cpu, ram, disk, net_in, net_out, uptime, cpu_cores, ram_total } = req.body;
     const clientIp = req.ip;
 
     if (!uuid) {
@@ -18,16 +18,22 @@ const report = async (req, res) => {
         status: 1,
         last_seen: new Date(),
         client_ip: clientIp,
+        uptime: uptime,
+        cpu_cores: cpu_cores,
+        ram_total: ram_total,
       }
     });
 
     // Update server info
     await server.update({
       name: name || server.name,
-      os_info: os,
+      os_info: os || server.os_info,
       status: 1,
       last_seen: new Date(),
       client_ip: clientIp,
+      uptime: uptime,
+      cpu_cores: cpu_cores || server.cpu_cores,
+      ram_total: ram_total || server.ram_total,
     });
 
     // Save metrics

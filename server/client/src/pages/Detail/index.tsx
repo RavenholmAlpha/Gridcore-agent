@@ -68,8 +68,9 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ serverId, onClose }) => {
              <Descriptions column={2} layout="vertical" contentStyle={{ color: '#ededed' }} labelStyle={{ color: '#a1a1aa' }}>
                 <Descriptions.Item label="OS">{data.server.os_info}</Descriptions.Item>
                 <Descriptions.Item label="IP">{data.server.client_ip}</Descriptions.Item>
-                <Descriptions.Item label="CPU Cores">{data.server.cpu_cores}</Descriptions.Item>
-                <Descriptions.Item label="RAM Total">{(data.server.ram_total / 1024 / 1024 / 1024).toFixed(1)} GB</Descriptions.Item>
+                <Descriptions.Item label="CPU Cores">{data.server.cpu_cores || '-'}</Descriptions.Item>
+                <Descriptions.Item label="RAM Total">{data.server.ram_total ? (data.server.ram_total / 1024 / 1024 / 1024).toFixed(1) + ' GB' : '-'}</Descriptions.Item>
+                <Descriptions.Item label="Uptime">{data.server.uptime ? (data.server.uptime / 3600).toFixed(1) + ' Hours' : '-'}</Descriptions.Item>
                 <Descriptions.Item label="Last Seen">{dayjs(data.server.last_seen).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
              </Descriptions>
           </section>

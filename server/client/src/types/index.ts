@@ -8,6 +8,7 @@ export interface Server {
   ram_total: number;
   status: number; // 0: Offline, 1: Online
   last_seen: string;
+  uptime: number;
   latest_metric?: Metric;
 }
 

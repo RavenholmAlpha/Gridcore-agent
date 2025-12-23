@@ -40,6 +40,10 @@ const Server = sequelize.define('Server', {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
   },
+  uptime: {
+    type: DataTypes.BIGINT, // Seconds
+    allowNull: true,
+  },
   secret: {
     type: DataTypes.STRING,
     allowNull: true, // If null, use global secret or no secret
