@@ -7,10 +7,12 @@ import (
 	"github.com/shirou/gopsutil/v3/net"
 )
 
+// GetNetwork 获取网络接口统计信息
 func GetNetwork() ([]net.IOCountersStat, error) {
 	return net.IOCounters(true)
 }
 
+// GetPublicIP 获取公网 IP 地址
 func GetPublicIP() string {
 	client := resty.New()
 	client.SetTimeout(5 * time.Second)

@@ -5,33 +5,37 @@ import (
 	"time"
 )
 
+// Data 定义了收集到的系统指标数据结构
 type Data struct {
-	UUID     string  `json:"uuid"`
-	Name     string  `json:"name"`
-	OS       string  `json:"os"`
-	Uptime   uint64  `json:"uptime"`
-	CPU      float64 `json:"cpu"`
-	RAM      float64 `json:"ram"`
-	Disk     float64 `json:"disk"`
-	NetIn    uint64  `json:"net_in"`
-	NetOut   uint64  `json:"net_out"`
-	PublicIP string  `json:"public_ip"`
-	Load1    float64 `json:"load_1"`
-	Load5    float64 `json:"load_5"`
-	Load15   float64 `json:"load_15"`
+	UUID     string  `json:"uuid"`      // 代理唯一标识
+	Name     string  `json:"name"`      // 主机名
+	OS       string  `json:"os"`        // 操作系统信息
+	Uptime   uint64  `json:"uptime"`    // 运行时间
+	CPU      float64 `json:"cpu"`       // CPU 使用率
+	RAM      float64 `json:"ram"`       // 内存使用率
+	Disk     float64 `json:"disk"`      // 磁盘使用率
+	NetIn    uint64  `json:"net_in"`    // 网络入站速率
+	NetOut   uint64  `json:"net_out"`   // 网络出站速率
+	PublicIP string  `json:"public_ip"` // 公网 IP
+	Load1    float64 `json:"load_1"`    // 1分钟负载
+	Load5    float64 `json:"load_5"`    // 5分钟负载
+	Load15   float64 `json:"load_15"`   // 15分钟负载
 }
 
+// Collector 负责收集系统指标
 type Collector struct {
-	prevNetIn   uint64
-	prevNetOut  uint64
-	prevNetTime time.Time
-	publicIP    string
+	prevNetIn   uint64    // 上一次采集的网络入站流量总和
+	prevNetOut  uint64    // 上一次采集的网络出站流量总和
+	prevNetTime time.Time // 上一次采集时间
+	publicIP    string    // 缓存的公网 IP
 }
 
+// New 创建一个新的收集器实例
 func New() *Collector {
 	return &Collector{}
 }
 
+// Collect 执行一次系统指标采集
 func (c *Collector) Collect() (*Data, error) {
 	cpuVal, _ := GetCPUPercent()
 
@@ -47,7 +51,7 @@ func (c *Collector) Collect() (*Data, error) {
 		return nil, err
 	}
 
-	// Calculate total network counters
+	// 计算网络总流量
 	var totalIn, totalOut uint64
 	for _, n := range netVals {
 		totalIn += n.BytesRecv
@@ -60,6 +64,7 @@ func (c *Collector) Collect() (*Data, error) {
 	if !c.prevNetTime.IsZero() {
 		duration := now.Sub(c.prevNetTime).Seconds()
 		if duration > 0 {
+			// 计算速率：(当前总量 - 上次总量) / 时间间隔
 			if totalIn >= c.prevNetIn {
 				netInRate = uint64(float64(totalIn-c.prevNetIn) / duration)
 			}
@@ -69,11 +74,12 @@ func (c *Collector) Collect() (*Data, error) {
 		}
 	}
 
-	// Update state
+	// 更新状态以供下次计算使用
 	c.prevNetIn = totalIn
 	c.prevNetOut = totalOut
 	c.prevNetTime = now
 
+	// 如果尚未获取公网 IP，则尝试获取
 	if c.publicIP == "" {
 		c.publicIP = GetPublicIP()
 	}
