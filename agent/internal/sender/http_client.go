@@ -13,9 +13,10 @@ import (
 
 // Sender 负责将收集到的数据发送到服务器
 type Sender struct {
-	client    *resty.Client        // HTTP 客户端
-	cfg       *config.Config       // 配置信息
-	collector *collector.Collector // 数据收集器
+	client            *resty.Client        // HTTP 客户端
+	cfg               *config.Config       // 配置信息
+	collector         *collector.Collector // 数据收集器
+	unauthorizedCount int                  // 连续 401 错误计数
 }
 
 // New 创建一个新的发送器实例
@@ -75,6 +76,16 @@ func (s *Sender) report() {
 	if err != nil {
 		log.Printf("Error sending report: %v\n", err)
 		return
+	}
+
+	if resp.StatusCode() == 401 {
+		s.unauthorizedCount++
+		log.Printf("Received 401 Unauthorized (%d/5)\n", s.unauthorizedCount)
+		if s.unauthorizedCount >= 5 {
+			log.Fatalf("Received 401 Unauthorized 5 times. Exiting...")
+		}
+	} else if resp.IsSuccess() {
+		s.unauthorizedCount = 0
 	}
 
 	if s.cfg.Debug {
