@@ -30,3 +30,9 @@ export interface ServerDetail {
   server: Server;
   metrics: Metric[];
 }
+
+export interface CreateNodeRequest {
+  uuid: string;
+  secret: string;
+  name?: string;
+}

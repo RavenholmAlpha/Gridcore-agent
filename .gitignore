@@ -3,3 +3,4 @@ agent/gridcore-agent-win.exe
 server/client/node_modules
 server/service/node_modules
 agent/config.yaml
+agent/*.exe

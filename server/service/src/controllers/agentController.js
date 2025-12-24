@@ -9,18 +9,26 @@ const report = async (req, res) => {
       return res.status(400).json({ code: 400, message: 'UUID is required' });
     }
 
-    // Find or create server
-    let [server, created] = await Server.findOrCreate({
-      where: { uuid },
-      defaults: {
-        name: name || uuid,
-        os_info: os,
-        status: 1,
-        last_seen: new Date(),
-        client_ip: clientIp,
-        uptime: uptime,
-      }
-    });
+    // Authentication
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ code: 401, message: 'Unauthorized: Missing or invalid token' });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    // Find server
+    const server = await Server.findOne({ where: { uuid } });
+
+    // Strict Mode: Node must be registered
+    if (!server) {
+      return res.status(403).json({ code: 403, message: 'Forbidden: Node not registered' });
+    }
+
+    // Verify Secret
+    if (server.secret !== token) {
+      return res.status(401).json({ code: 401, message: 'Unauthorized: Invalid secret' });
+    }
 
     // Update server info
     await server.update({

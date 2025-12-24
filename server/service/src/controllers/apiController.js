@@ -74,7 +74,39 @@ const getServerMetrics = async (req, res) => {
   }
 };
 
+// Create a new node (server)
+const createNode = async (req, res) => {
+  try {
+    const { uuid, secret, name } = req.body;
+
+    if (!uuid || !secret) {
+      return res.status(400).json({ code: 400, message: 'UUID and Secret are required' });
+    }
+
+    // Check if server already exists
+    const existingServer = await Server.findOne({ where: { uuid } });
+    if (existingServer) {
+      return res.status(409).json({ code: 409, message: 'Node with this UUID already exists' });
+    }
+
+    // Create new server
+    const newServer = await Server.create({
+      uuid,
+      secret,
+      name: name || uuid,
+      status: 0, // Initially offline until first report
+      last_seen: new Date(),
+    });
+
+    return res.status(201).json({ code: 201, message: 'Node created successfully', data: newServer });
+  } catch (error) {
+    console.error('Create node error:', error);
+    return res.status(500).json({ code: 500, message: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   getServers,
   getServerMetrics,
+  createNode,
 };

@@ -4,6 +4,6 @@ const agentController = require('../controllers/agentController');
 const authMiddleware = require('../middlewares/auth');
 
 // Agent reporting endpoint
-router.post('/report', authMiddleware, agentController.report);
+router.post('/report', agentController.report);
 
 module.exports = router;
