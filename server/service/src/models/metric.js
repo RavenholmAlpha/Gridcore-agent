@@ -36,6 +36,18 @@ const Metric = sequelize.define('Metric', {
     type: DataTypes.BIGINT,
     allowNull: true,
   },
+  load_1: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+  },
+  load_5: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+  },
+  load_15: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+  },
 }, {
   indexes: [
     {

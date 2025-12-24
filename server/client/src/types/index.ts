@@ -20,6 +20,9 @@ export interface Metric {
   disk_usage: number;
   net_in_rate: number;
   net_out_rate: number;
+  load_1: number;
+  load_5: number;
+  load_15: number;
   createdAt: string;
 }
 

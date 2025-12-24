@@ -70,7 +70,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ serverId, onClose }) => {
                 <Descriptions.Item label="IP">{data.server.client_ip}</Descriptions.Item>
                 <Descriptions.Item label="CPU Cores">{data.server.cpu_cores || '-'}</Descriptions.Item>
                 <Descriptions.Item label="RAM Total">{data.server.ram_total ? (data.server.ram_total / 1024 / 1024 / 1024).toFixed(1) + ' GB' : '-'}</Descriptions.Item>
-                <Descriptions.Item label="Uptime">{data.server.uptime ? (data.server.uptime / 3600).toFixed(1) + ' Hours' : '-'}</Descriptions.Item>
+                <Descriptions.Item label="Uptime">{data.server.uptime ? (data.server.uptime / 3600 / 24).toFixed(1) + ' Days' : '-'}</Descriptions.Item>
                 <Descriptions.Item label="Last Seen">{dayjs(data.server.last_seen).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
              </Descriptions>
           </section>
@@ -79,7 +79,17 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ serverId, onClose }) => {
           <section>
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold text-primary">Performance</h3>
-              <Select 
+              <div className="flex gap-4">
+                <div className="flex flex-col items-end">
+                    <span className="text-xs text-secondary">Load Average (1/5/15)</span>
+                    <span className="font-mono text-sm text-primary">
+                      {data.metrics.length > 0 
+                        ? `${data.metrics[data.metrics.length-1].load_1?.toFixed(2) || '-'} / ${data.metrics[data.metrics.length-1].load_5?.toFixed(2) || '-'} / ${data.metrics[data.metrics.length-1].load_15?.toFixed(2) || '-'}`
+                        : '- / - / -'
+                      }
+                    </span>
+                </div>
+                <Select 
                 defaultValue="1h" 
                 style={{ width: 120 }} 
                 onChange={setRange}
@@ -89,6 +99,7 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ serverId, onClose }) => {
                   { value: '7d', label: 'Last 7 Days' },
                 ]}
               />
+              </div>
             </div>
 
             {/* CPU Chart */}
@@ -106,14 +117,14 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ serverId, onClose }) => {
                     <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                     <XAxis 
                         dataKey="createdAt" 
-                        tickFormatter={(str) => dayjs(str).format('HH:mm')} 
+                        tickFormatter={(str: string) => dayjs(str).format('HH:mm')} 
                         stroke="#52525b" 
                         tick={{ fontSize: 10 }}
                     />
                     <YAxis stroke="#52525b" tick={{ fontSize: 10 }} />
                     <Tooltip 
                         contentStyle={{ backgroundColor: '#141414', borderColor: '#27272a', color: '#ededed' }}
-                        labelFormatter={(str) => dayjs(str).format('YYYY-MM-DD HH:mm:ss')}
+                        labelFormatter={(str: string) => dayjs(str).format('YYYY-MM-DD HH:mm:ss')}
                     />
                     <Area type="monotone" dataKey="cpu_usage" stroke="#ededed" fillOpacity={1} fill="url(#colorCpu)" />
                   </AreaChart>
@@ -136,14 +147,14 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({ serverId, onClose }) => {
                     <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                     <XAxis 
                         dataKey="createdAt" 
-                        tickFormatter={(str) => dayjs(str).format('HH:mm')} 
+                        tickFormatter={(str: string) => dayjs(str).format('HH:mm')} 
                         stroke="#52525b" 
                         tick={{ fontSize: 10 }}
                     />
                     <YAxis stroke="#52525b" tick={{ fontSize: 10 }} />
                     <Tooltip 
                         contentStyle={{ backgroundColor: '#141414', borderColor: '#27272a', color: '#ededed' }}
-                        labelFormatter={(str) => dayjs(str).format('YYYY-MM-DD HH:mm:ss')}
+                        labelFormatter={(str: string) => dayjs(str).format('YYYY-MM-DD HH:mm:ss')}
                     />
                     <Area type="monotone" dataKey="ram_usage" stroke="#a1a1aa" fillOpacity={1} fill="url(#colorRam)" />
                   </AreaChart>
