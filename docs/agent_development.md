@@ -23,6 +23,7 @@
 *   **Memory**: 采集内存使用率 (`mem.VirtualMemory`)。
 *   **Disk**: 采集根分区 (`/`) 或指定分区的使用率 (`disk.Usage`)。
 *   **Network**: 采集实时网络速率 (Bytes/s)，通过计算两次采集的差值实现。
+*   **Public IP**: 采集公网 IP (通过 `api.ipify.org`)，首次获取后缓存，避免频繁请求。
 *   **Load**: 采集系统负载 (1/5/15分钟)，Windows 下可能不可用。
 
 ### 3.2 上报模块 (Sender)
@@ -64,6 +65,7 @@ uuid: "550e8400-e29b-41d4-a716-446655440000" # 自动生成
   "disk": 60.1,
   "net_in": 10240,
   "net_out": 20480,
+  "public_ip": "1.2.3.4",
   "load_1": 0.5,
   "load_5": 0.4,
   "load_15": 0.3
