@@ -105,8 +105,28 @@ const createNode = async (req, res) => {
   }
 };
 
+// Delete a node
+const deleteNode = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const server = await Server.findByPk(id);
+    if (!server) {
+      return res.status(404).json({ code: 404, message: 'Node not found' });
+    }
+
+    await server.destroy(); // Cascades to metrics due to model association
+
+    return res.json({ code: 200, message: 'Node deleted successfully' });
+  } catch (error) {
+    console.error('Delete node error:', error);
+    return res.status(500).json({ code: 500, message: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   getServers,
   getServerMetrics,
   createNode,
+  deleteNode,
 };

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { getServers, createNode } from '@/services/api';
+import { getServers, createNode, deleteNode } from '@/services/api';
 import { Server } from '@/types';
 import ServerCard from './ServerCard';
-import { Layout, Spin, Empty, Button, Modal, Form, Input, message } from 'antd';
+import { Layout, Spin, Empty, Button, Modal, Form, Input, App } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 
 const { Header, Content } = Layout;
@@ -12,6 +12,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onServerSelect }) => {
+  const { message } = App.useApp();
   const [servers, setServers] = useState<Server[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,6 +48,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onServerSelect }) => {
       } else {
         message.error('Failed to create node');
       }
+    }
+  };
+
+  const handleDeleteNode = async (id: number) => {
+    try {
+      await deleteNode(id);
+      message.success('Node deleted successfully');
+      fetchData(); // Refresh list
+    } catch (error) {
+      message.error('Failed to delete node');
     }
   };
 
@@ -89,6 +100,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onServerSelect }) => {
                 key={server.id} 
                 server={server} 
                 onClick={() => onServerSelect(server.id)}
+                onDelete={handleDeleteNode}
               />
             ))}
           </div>

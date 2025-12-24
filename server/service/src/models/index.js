@@ -4,7 +4,7 @@ const Metric = require('./metric');
 
 // Associations
 Server.hasMany(Metric, { foreignKey: 'server_id', onDelete: 'CASCADE' });
-Metric.belongsTo(Server, { foreignKey: 'server_id' });
+Metric.belongsTo(Server, { foreignKey: 'server_id', onDelete: 'CASCADE' });
 
 const initDB = async () => {
   try {

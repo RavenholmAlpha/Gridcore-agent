@@ -1,14 +1,16 @@
 import React from 'react';
 import { Server } from '@/types';
-import { Activity, Cpu, HardDrive, Network } from 'lucide-react';
+import { Activity, Cpu, HardDrive, Network, Trash2 } from 'lucide-react';
+import { Popconfirm, Button } from 'antd';
 import clsx from 'clsx';
 
 interface ServerCardProps {
   server: Server;
   onClick: () => void;
+  onDelete: (id: number) => void;
 }
 
-const ServerCard: React.FC<ServerCardProps> = ({ server, onClick }) => {
+const ServerCard: React.FC<ServerCardProps> = ({ server, onClick, onDelete }) => {
   const isOnline = server.status === 1;
   const metric = server.latest_metric;
 
@@ -20,11 +22,38 @@ const ServerCard: React.FC<ServerCardProps> = ({ server, onClick }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <div 
       onClick={onClick}
       className="bg-surface border border-border rounded-lg p-5 cursor-pointer hover:border-primary/50 transition-all duration-300 group relative overflow-hidden"
     >
+      {/* Delete Button */}
+      <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" onClick={handleDelete}>
+        <Popconfirm
+          title="Delete Node"
+          description="Are you sure to delete this node?"
+          onConfirm={(e) => {
+            e?.stopPropagation();
+            onDelete(server.id);
+          }}
+          onCancel={(e) => e?.stopPropagation()}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button 
+            type="text" 
+            danger 
+            icon={<Trash2 size={16} />} 
+            size="small"
+            className="flex items-center justify-center"
+          />
+        </Popconfirm>
+      </div>
+
       {/* Status Indicator */}
       <div className={clsx(
         "absolute top-0 right-0 w-2 h-2 m-4 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]",

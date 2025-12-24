@@ -22,3 +22,7 @@ export const createNode = async (data: CreateNodeRequest): Promise<Server> => {
   const response = await api.post<{ data: Server }>('/nodes', data);
   return response.data.data;
 };
+
+export const deleteNode = async (id: number): Promise<void> => {
+  await api.delete(`/nodes/${id}`);
+};
