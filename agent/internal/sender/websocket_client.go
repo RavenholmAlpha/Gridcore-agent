@@ -84,9 +84,6 @@ func (s *Sender) connect() error {
 		u.Scheme = "wss"
 	}
 
-	// 调整 Path，假设 ServerURL 配置的是基础地址或旧的 report 地址
-	// 我们统一将其指向 /api/agent/ws
-	// 如果配置的是 http://localhost:3000/api/agent/report，我们取 Host，重组为 ws://localhost:3000/api/agent/ws
 	u.Path = "/api/agent/ws"
 	u.RawQuery = ""
 
@@ -102,6 +99,20 @@ func (s *Sender) connect() error {
 		return err
 	}
 	s.conn = c
+
+	// 设置读超时和 Ping 处理
+	s.conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	s.conn.SetPingHandler(func(appData string) error {
+		// 收到 Ping，重置读超时
+		s.conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		// 手动回复 Pong
+		err := s.conn.WriteControl(websocket.PongMessage, []byte(appData), time.Now().Add(10*time.Second))
+		if err == websocket.ErrCloseSent {
+			return nil
+		}
+		return err
+	})
+
 	return nil
 }
 
@@ -116,16 +127,17 @@ func (s *Sender) cleanup() {
 
 func (s *Sender) readLoop(errChan chan<- error) {
 	defer func() {
-		// 避免向已关闭的 channel 发送
-		recover()
+		if r := recover(); r != nil {
+			log.Printf("Recovered from panic in readLoop: %v", r)
+		}
 	}()
 
 	for {
 		if s.conn == nil {
 			return
 		}
-		// 设置读取超时，略大于心跳间隔
-		s.conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		// 这里的 ReadDeadline 主要由 PingHandler 维护，但为了保险，每次 Read 前也可以检查
+		// 注意：ReadMessage 会阻塞直到有消息或出错
 		_, message, err := s.conn.ReadMessage()
 		if err != nil {
 			select {
@@ -134,7 +146,6 @@ func (s *Sender) readLoop(errChan chan<- error) {
 			}
 			return
 		}
-		// 处理服务端消息（目前主要是日志打印，未来可扩展指令）
 		if len(message) > 0 {
 			log.Printf("Received server message: %s", message)
 		}
@@ -142,6 +153,7 @@ func (s *Sender) readLoop(errChan chan<- error) {
 }
 
 func (s *Sender) writeLoop(errChan chan<- error) {
+	log.Println("Starting writeLoop...")
 	interval := s.cfg.Interval
 	if interval < 1 {
 		interval = 2
@@ -150,13 +162,17 @@ func (s *Sender) writeLoop(errChan chan<- error) {
 	defer ticker.Stop()
 
 	defer func() {
-		recover()
+		if r := recover(); r != nil {
+			log.Printf("Recovered from panic in writeLoop: %v", r)
+		}
+		log.Println("Exiting writeLoop...")
 	}()
 
 	for {
 		select {
 		case <-ticker.C:
 			if s.conn == nil {
+				log.Println("writeLoop: connection is nil, returning")
 				return
 			}
 
@@ -175,6 +191,7 @@ func (s *Sender) writeLoop(errChan chan<- error) {
 			s.sendMu.Unlock()
 
 			if err != nil {
+				log.Printf("WriteMessage error: %v", err)
 				select {
 				case errChan <- err:
 				default:
