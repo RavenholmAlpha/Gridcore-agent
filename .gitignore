@@ -6,3 +6,4 @@ agent/config.yaml
 agent/*.exe
 server/service/gridcore.db
 server/node_modules
+data/*.db
