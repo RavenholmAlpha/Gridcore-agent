@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { getServers, createNode, deleteNode } from '@/services/api';
+import { getServers } from '@/services/api';
 import { Server } from '@/types';
 import ServerCard from './ServerCard';
-import { Layout, Spin, Empty, Button, Modal, Form, Input, App } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Layout, Spin, Empty, Button, App } from 'antd';
+import { SettingOutlined } from '@ant-design/icons';
 
 const { Header, Content } = Layout;
 
 interface DashboardProps {
   onServerSelect: (id: number) => void;
+  onNavigateToAdmin: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onServerSelect }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onServerSelect, onNavigateToAdmin }) => {
   const { message } = App.useApp();
   const [servers, setServers] = useState<Server[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [form] = Form.useForm();
 
   const fetchData = async () => {
     try {
@@ -35,32 +34,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onServerSelect }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleCreateNode = async (values: any) => {
-    try {
-      await createNode(values);
-      message.success('Node created successfully');
-      setIsModalOpen(false);
-      form.resetFields();
-      fetchData(); // Refresh list
-    } catch (error: any) {
-      if (error.response?.status === 409) {
-        message.error('Node with this UUID already exists');
-      } else {
-        message.error('Failed to create node');
-      }
-    }
-  };
-
-  const handleDeleteNode = async (id: number) => {
-    try {
-      await deleteNode(id);
-      message.success('Node deleted successfully');
-      fetchData(); // Refresh list
-    } catch (error) {
-      message.error('Failed to delete node');
-    }
-  };
-
   return (
     <Layout className="min-h-screen bg-background">
       <Header className="bg-background/50 backdrop-blur-md border-b border-border px-8 flex items-center justify-between sticky top-0 z-10">
@@ -74,12 +47,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onServerSelect }) => {
                 <span>Total: <span className="text-primary">{servers.length}</span></span>
             </div>
             <Button 
-              type="primary" 
-              icon={<PlusOutlined />} 
-              onClick={() => setIsModalOpen(true)}
-              className="bg-primary hover:bg-primary/90"
+              icon={<SettingOutlined />} 
+              onClick={onNavigateToAdmin}
+              className="hover:text-primary hover:border-primary"
             >
-              Add Node
+              Manage
             </Button>
         </div>
       </Header>
@@ -100,57 +72,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onServerSelect }) => {
                 key={server.id} 
                 server={server} 
                 onClick={() => onServerSelect(server.id)}
-                onDelete={handleDeleteNode}
               />
             ))}
           </div>
         )}
-
-        <Modal
-          title="Add New Node"
-          open={isModalOpen}
-          onCancel={() => setIsModalOpen(false)}
-          footer={null}
-        >
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleCreateNode}
-          >
-            <Form.Item
-              name="name"
-              label="Node Name"
-              rules={[{ required: true, message: 'Please input node name!' }]}
-            >
-              <Input placeholder="e.g. Production Server 1" />
-            </Form.Item>
-            
-            <Form.Item
-              name="uuid"
-              label="UUID"
-              rules={[{ required: true, message: 'Please input UUID!' }]}
-              extra={<Button type="link" size="small" onClick={() => form.setFieldValue('uuid', crypto.randomUUID())} className="p-0">Generate UUID</Button>}
-            >
-              <Input placeholder="Enter UUID or generate one" />
-            </Form.Item>
-
-            <Form.Item
-              name="secret"
-              label="Secret Key"
-              rules={[{ required: true, message: 'Please input secret key!' }]}
-              extra={<Button type="link" size="small" onClick={() => form.setFieldValue('secret', Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10))} className="p-0">Generate Secret</Button>}
-            >
-              <Input.Password placeholder="Enter a strong secret key" />
-            </Form.Item>
-
-            <Form.Item className="mb-0 flex justify-end">
-              <div className="flex justify-end gap-2">
-                <Button onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                <Button type="primary" htmlType="submit">Create Node</Button>
-              </div>
-            </Form.Item>
-          </Form>
-        </Modal>
       </Content>
     </Layout>
   );

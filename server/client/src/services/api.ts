@@ -26,3 +26,12 @@ export const createNode = async (data: CreateNodeRequest): Promise<Server> => {
 export const deleteNode = async (id: number): Promise<void> => {
   await api.delete(`/nodes/${id}`);
 };
+
+export const verifySecret = async (password: string): Promise<boolean> => {
+  try {
+    const response = await api.post('/verify-secret', { password });
+    return response.status === 200;
+  } catch (error) {
+    return false;
+  }
+};

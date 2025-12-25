@@ -132,9 +132,24 @@ const deleteNode = async (req, res) => {
   }
 };
 
+// Verify Admin Secret
+const verifySecret = async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (password === process.env.SECRET) {
+      return res.json({ code: 200, message: 'Verified' });
+    }
+    return res.status(401).json({ code: 401, message: 'Invalid secret' });
+  } catch (error) {
+    console.error('Verify secret error:', error);
+    return res.status(500).json({ code: 500, message: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   getServers,
   getServerMetrics,
   createNode,
   deleteNode,
+  verifySecret,
 };

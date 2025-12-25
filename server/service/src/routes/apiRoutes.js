@@ -7,5 +7,6 @@ router.get('/servers', apiController.getServers);
 router.get('/servers/:id/metrics', apiController.getServerMetrics);
 router.post('/nodes', apiController.createNode);
 router.delete('/nodes/:id', apiController.deleteNode);
+router.post('/verify-secret', apiController.verifySecret);
 
 module.exports = router;
