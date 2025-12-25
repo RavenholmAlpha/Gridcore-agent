@@ -2,6 +2,23 @@ const WebSocket = require('ws');
 const { processReport } = require('../services/agentService');
 const url = require('url');
 
+// Map to store active connections: uuid -> WebSocket
+const clients = new Map();
+
+/**
+ * Send a command to a specific agent
+ * @param {string} uuid - Agent UUID
+ * @param {object} command - Command object (e.g. { type: 'exit' })
+ */
+const sendCommand = (uuid, command) => {
+    const ws = clients.get(uuid);
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(command));
+        return true;
+    }
+    return false;
+};
+
 const initWebSocket = (server) => {
     const wss = new WebSocket.Server({ noServer: true });
 
@@ -34,14 +51,14 @@ const initWebSocket = (server) => {
         const { uuid, secret, ip } = ws.agentInfo;
         console.log(`Agent connected: ${uuid}`);
 
+        // Register client
+        clients.set(uuid, ws);
+
         ws.on('message', async (message) => {
             try {
                 const data = JSON.parse(message);
                 // Reuse Service logic
                 await processReport(uuid, secret, data, ip);
-
-                // Optional: Ack
-                // ws.send(JSON.stringify({ type: 'ack' }));
             } catch (error) {
                 console.error(`Error processing msg from ${uuid}:`, error.message);
                 // If auth failed, close connection
@@ -53,6 +70,8 @@ const initWebSocket = (server) => {
 
         ws.on('close', () => {
             console.log(`Agent disconnected: ${uuid}`);
+            // Unregister client
+            clients.delete(uuid);
         });
 
         // Heartbeat Ping
@@ -68,4 +87,4 @@ const initWebSocket = (server) => {
     return wss;
 };
 
-module.exports = initWebSocket;
+module.exports = { initWebSocket, sendCommand };

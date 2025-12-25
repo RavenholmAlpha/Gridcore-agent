@@ -25,7 +25,7 @@ const processReport = async (uuid, secret, data, clientIp) => {
         os_info: data.os || server.os_info,
         status: 1,
         last_seen: new Date(),
-        client_ip: clientIp,
+        client_ip: data.public_ip || clientIp,
         uptime: data.uptime,
     });
 

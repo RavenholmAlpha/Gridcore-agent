@@ -8,7 +8,7 @@ const getServers = async (req, res) => {
       attributes: ['id', 'uuid', 'name', 'os_info', 'status', 'last_seen', 'cpu_cores', 'ram_total'],
       order: [['status', 'DESC'], ['id', 'ASC']], // Online first
     });
-    
+
     // Attach latest metrics for each server (optional optimization: separate query or subquery)
     // For simplicity, we just fetch latest metric for each server here or frontend fetches details
     // Let's attach the very last metric to show current load
@@ -105,6 +105,8 @@ const createNode = async (req, res) => {
   }
 };
 
+const { sendCommand } = require('../websocket');
+
 // Delete a node
 const deleteNode = async (req, res) => {
   try {
@@ -115,7 +117,13 @@ const deleteNode = async (req, res) => {
       return res.status(404).json({ code: 404, message: 'Node not found' });
     }
 
-    await server.destroy(); // Cascades to metrics due to model association
+    // Notify agent to exit
+    sendCommand(server.uuid, { type: 'exit' });
+
+    // Manually delete related metrics first to avoid foreign key constraint error
+    await Metric.destroy({ where: { server_id: id } });
+
+    await server.destroy();
 
     return res.json({ code: 200, message: 'Node deleted successfully' });
   } catch (error) {

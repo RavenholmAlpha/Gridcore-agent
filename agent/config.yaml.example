@@ -1,4 +1,4 @@
-server_url: http://monitor.example.com/api/agent/report
+server_url: ws://monitor.example.com/api/agent/ws
 secret: my-secure-secret-token
 interval: 2  # 上报间隔(秒)
 debug: false

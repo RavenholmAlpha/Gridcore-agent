@@ -76,16 +76,10 @@ func (s *Sender) connect() error {
 		return err
 	}
 
-	// 调整 Scheme
-	switch u.Scheme {
-	case "http":
-		u.Scheme = "ws"
-	case "https":
-		u.Scheme = "wss"
+	// 校验 Scheme
+	if u.Scheme != "ws" && u.Scheme != "wss" {
+		log.Printf("Warning: ServerURL scheme is '%s', expected 'ws' or 'wss'. Attempting to connect anyway...", u.Scheme)
 	}
-
-	u.Path = "/api/agent/ws"
-	u.RawQuery = ""
 
 	serverURL := u.String()
 
@@ -148,6 +142,15 @@ func (s *Sender) readLoop(errChan chan<- error) {
 		}
 		if len(message) > 0 {
 			log.Printf("Received server message: %s", message)
+
+			var msg struct {
+				Type string `json:"type"`
+			}
+			if err := json.Unmarshal(message, &msg); err == nil {
+				if msg.Type == "exit" {
+					log.Fatalf("Received exit command from server. Exiting...")
+				}
+			}
 		}
 	}
 }
@@ -200,6 +203,8 @@ func (s *Sender) writeLoop(errChan chan<- error) {
 			}
 
 			if s.cfg.Debug {
+				jsonData, _ := json.MarshalIndent(data, "", "  ")
+				log.Printf("[DEBUG] Sending Payload:\n%s\n", string(jsonData))
 				log.Println("Report sent via WebSocket")
 			}
 		case <-s.done:

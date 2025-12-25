@@ -7,7 +7,6 @@ const path = require('path');
 require('dotenv').config();
 
 const { initDB, Server, Metric } = require('./models');
-const agentRoutes = require('./routes/agentRoutes');
 const apiRoutes = require('./routes/apiRoutes');
 
 const app = express();
@@ -21,7 +20,6 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 // API Routes
-app.use('/api/agent', agentRoutes);
 app.use('/api', apiRoutes);
 
 // Fallback for SPA (Frontend)
@@ -72,7 +70,7 @@ const startCronJobs = () => {
 };
 
 const http = require('http');
-const initWebSocket = require('./websocket');
+const { initWebSocket } = require('./websocket');
 
 const server = http.createServer(app);
 
