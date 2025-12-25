@@ -9,7 +9,8 @@ const hmrPortFix = () => {
     transform(code, id) {
       if (id.includes('vite/dist/client/client.mjs')) {
         // Replace hardcoded port with location.port to support both HTTP (5173) and HTTPS (443/Cloudflare)
-        return code.replace(/const socketPort = \d+/, 'const socketPort = location.port');
+        // Handle default ports (80/443) where location.port is empty
+        return code.replace(/const socketPort = \d+/, "const socketPort = location.port || (location.protocol === 'https:' ? '443' : '80')");
       }
     }
   }
@@ -25,6 +26,7 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0', // Listen on all network interfaces
+    port: parseInt(process.env.PORT) || 5173, // Allow port configuration via env
     // Remove hardcoded clientPort to support both local (5173) and Cloudflare (443)
     // We will use a plugin to dynamically set the port
     proxy: {
