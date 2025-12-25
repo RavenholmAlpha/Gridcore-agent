@@ -2,6 +2,7 @@ export interface Server {
   id: number;
   uuid: string;
   name: string;
+  remark?: string;
   os_info: string;
   client_ip: string;
   cpu_cores: number;

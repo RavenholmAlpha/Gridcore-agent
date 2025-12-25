@@ -48,6 +48,10 @@ const Server = sequelize.define('Server', {
     type: DataTypes.STRING,
     allowNull: true, // If null, use global secret or no secret
   },
+  remark: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 });
 
 module.exports = Server;

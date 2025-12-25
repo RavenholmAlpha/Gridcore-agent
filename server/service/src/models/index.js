@@ -10,7 +10,7 @@ const initDB = async () => {
   try {
     await sequelize.authenticate();
     console.log('Database connection established.');
-    await sequelize.sync(); // Sync models without altering table structure
+    await sequelize.sync({ alter: true }); // Sync models and alter table structure if needed
     console.log('Database synced.');
   } catch (error) {
     console.error('Unable to connect to the database:', error);

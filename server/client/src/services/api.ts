@@ -35,3 +35,8 @@ export const verifySecret = async (password: string): Promise<boolean> => {
     return false;
   }
 };
+
+export const updateRemark = async (id: number, remark: string) => {
+  const response = await api.put(`/nodes/${id}/remark`, { remark });
+  return response.data;
+};
