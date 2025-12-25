@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getServers } from '@/services/api';
 import { Server } from '@/types';
 import ServerCard from './ServerCard';
-import { Layout, Spin, Empty, Button, App } from 'antd';
+import { Layout, Spin, Empty, Button } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
 
 const { Header, Content } = Layout;
@@ -13,7 +13,6 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onServerSelect, onNavigateToAdmin }) => {
-  const { message } = App.useApp();
   const [servers, setServers] = useState<Server[]>([]);
   const [loading, setLoading] = useState(true);
 
