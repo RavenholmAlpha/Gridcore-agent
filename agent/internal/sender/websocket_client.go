@@ -111,12 +111,15 @@ func (s *Sender) connect() error {
 }
 
 func (s *Sender) cleanup() {
-	s.sendMu.Lock()
-	defer s.sendMu.Unlock()
+	// 先关闭连接，以解除 WriteMessage 的阻塞（如果存在）
+	// Close 是线程安全的，不需要持有锁
 	if s.conn != nil {
 		s.conn.Close()
-		s.conn = nil
 	}
+
+	s.sendMu.Lock()
+	defer s.sendMu.Unlock()
+	s.conn = nil
 }
 
 func (s *Sender) readLoop(errChan chan<- error) {
@@ -189,6 +192,10 @@ func (s *Sender) writeLoop(errChan chan<- error) {
 			payload, _ := json.Marshal(data)
 
 			s.sendMu.Lock()
+			if s.conn == nil {
+				s.sendMu.Unlock()
+				return
+			}
 			s.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 			err = s.conn.WriteMessage(websocket.TextMessage, payload)
 			s.sendMu.Unlock()
