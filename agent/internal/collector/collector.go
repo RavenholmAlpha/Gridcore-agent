@@ -12,7 +12,9 @@ type Data struct {
 	OS       string  `json:"os"`        // 操作系统信息
 	Uptime   uint64  `json:"uptime"`    // 运行时间
 	CPU      float64 `json:"cpu"`       // CPU 使用率
+	CPUCores int     `json:"cpu_cores"` // CPU 核心数
 	RAM      float64 `json:"ram"`       // 内存使用率
+	RAMTotal uint64  `json:"ram_total"` // 内存总量
 	Disk     float64 `json:"disk"`      // 磁盘使用率
 	NetIn    uint64  `json:"net_in"`    // 网络入站速率
 	NetOut   uint64  `json:"net_out"`   // 网络出站速率
@@ -38,6 +40,7 @@ func New() *Collector {
 // Collect 执行一次系统指标采集
 func (c *Collector) Collect() (*Data, error) {
 	cpuVal, _ := GetCPUPercent()
+	cpuCores, _ := GetCPUCores()
 
 	memVal, err := GetMemory()
 	if err != nil {
@@ -89,7 +92,9 @@ func (c *Collector) Collect() (*Data, error) {
 
 	data := &Data{
 		CPU:      cpuVal,
+		CPUCores: cpuCores,
 		RAM:      memVal.UsedPercent,
+		RAMTotal: memVal.Total,
 		Disk:     diskVal.UsedPercent,
 		NetIn:    netInRate,
 		NetOut:   netOutRate,

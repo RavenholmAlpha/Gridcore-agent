@@ -16,6 +16,11 @@ func GetCPUPercent() (float64, error) {
 	return 0, nil
 }
 
+// GetCPUCores 获取 CPU 核心数
+func GetCPUCores() (int, error) {
+	return cpu.Counts(true) // true for logical CPUs
+}
+
 // InitCPU 初始化 CPU 统计（第一次调用通常返回 0，需要先初始化）
 func InitCPU() {
 	cpu.Percent(0, false)

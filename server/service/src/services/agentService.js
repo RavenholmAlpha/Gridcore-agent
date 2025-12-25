@@ -27,6 +27,8 @@ const processReport = async (uuid, secret, data, clientIp) => {
         last_seen: new Date(),
         client_ip: data.public_ip || clientIp,
         uptime: data.uptime,
+        cpu_cores: data.cpu_cores,
+        ram_total: data.ram_total,
     });
 
     // 4. Save metrics
