@@ -2,18 +2,19 @@
 
 ## 1. 架构概述
 
-服务端基于 **Node.js** 构建，采用 **Express** (或 Koa) 作为 Web 框架，使用 **SQLite** 作为持久化存储。
+服务端基于 **Node.js** 构建，采用 **Express** 作为 Web 框架，使用 **SQLite** 作为持久化存储。
 服务端主要职责是：
-1.  **API Server**: 响应前端的查询请求，接收 Agent 的数据上报。
-2.  **WebSocket Server** (可选): 向前端实时推送服务器状态变更。
+1.  **API Server**: 响应前端的查询请求。
+2.  **WebSocket Server**: 维持与 Agent 的长连接，实时接收上报数据。
 3.  **Data Manager**: 管理 SQLite 数据库，执行定期清理任务。
 
 ## 2. 技术栈
 
 *   **Runtime**: Node.js (v18+)
 *   **Web Framework**: Express.js
+*   **WebSocket**: ws (用于处理 Agent 长连接)
 *   **Database**: SQLite3
-*   **ORM/Query Builder**: Sequelize 或 Knex.js (推荐 Sequelize 以简化模型定义)
+*   **ORM**: Sequelize
 *   **Validation**: Joi 或 Zod (用于验证 API 输入)
 *   **Logging**: Winston 或 Morgan
 
@@ -57,9 +58,12 @@
 业务逻辑层，解耦 Controller 和 Model。
 *   `ServerService`: 处理服务器注册、状态更新、列表查询。
 *   `MetricService`: 处理指标写入、历史数据查询、过期数据清理。
+*   `AgentService`: 专门处理 Agent 上报逻辑，供 WebSocket 和 HTTP 接口复用。
 
 ### 4.2 鉴权中间件 (Auth Middleware)
-*   **Agent 鉴权**: 检查 HTTP Header 中的 `Authorization` 字段是否匹配服务器的 `secret`。
+*   **Agent 鉴权**: 
+    *   **HTTP**: 检查 Header `Authorization`。
+    *   **WebSocket**: 在 Upgrade 阶段检查 Header `Authorization` 和 `X-Agent-UUID`。
 *   **Admin 鉴权** (可选): 如果面板需要登录，验证用户 Token。
 
 ### 4.3 定时任务 (Cron Jobs)
@@ -76,7 +80,8 @@ server/service/
 │   ├── middlewares/    # 中间件 (Auth, ErrorHandler)
 │   ├── models/         # Sequelize 模型定义
 │   ├── routes/         # 路由定义
-│   ├── services/       # 业务逻辑
+│   ├── services/       # 业务逻辑 (AgentService, etc.)
+│   ├── websocket/      # WebSocket 服务实现
 │   ├── utils/          # 工具函数 (Logger)
 │   └── app.js          # 入口文件
 ├── data/               # 存放 SQLite db 文件

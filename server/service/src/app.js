@@ -71,12 +71,20 @@ const startCronJobs = () => {
   });
 };
 
+const http = require('http');
+const initWebSocket = require('./websocket');
+
+const server = http.createServer(app);
+
 // Start Server
 const startServer = async () => {
   await initDB();
   startCronJobs();
-  
-  app.listen(PORT, '0.0.0.0', () => {
+
+  // Initialize WebSocket
+  initWebSocket(server);
+
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`Gridcore Server running on port ${PORT}`);
   });
 };

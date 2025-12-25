@@ -27,12 +27,17 @@
 *   **Load**: 采集系统负载 (1/5/15分钟)，Windows 下可能不可用。
 
 ### 3.2 上报模块 (Sender)
-负责将采集到的数据序列化为 JSON 并发送给服务端。
+负责将采集到的数据序列化为 JSON 并通过 WebSocket 发送给服务端。
 
-*   **周期性上报**: 使用 `time.NewTicker` 实现定时任务（默认 2 秒）。
-*   **断网重连**: 如果上报失败，记录错误日志，但**不应**退出程序，等待下一次 Ticker 继续尝试。
-*   **鉴权**: 在 HTTP Header 中添加 `Authorization: Bearer <Secret>`。
-*   **日志**: 使用 `log` 标准库打印带时间戳的日志，Debug 模式下打印发送的 JSON 内容。
+*   **通信协议**: WebSocket (`ws://` 或 `wss://`)。
+*   **连接地址**: `/api/agent/ws`。
+*   **鉴权**: 在 WebSocket 握手阶段（Handshake）的 HTTP Header 中添加：
+    *   `Authorization: Bearer <Secret>`
+    *   `X-Agent-UUID: <UUID>`
+*   **心跳与重连**: 
+    *   客户端自动处理断线重连（默认等待 5 秒重试）。
+    *   响应服务端的 Ping 帧，保持连接活跃。
+*   **数据上报**: 建立连接后，启动定时器（默认 2 秒），周期性向服务端发送 JSON 数据。
 
 ### 3.3 配置管理 (Config)
 Agent 启动时读取 `config.yaml` 或命令行参数。
@@ -46,7 +51,7 @@ Agent 启动时读取 `config.yaml` 或命令行参数。
 
 **示例配置文件**:
 ```yaml
-server_url: "http://monitor.example.com/api/agent/report"
+server_url: "http://monitor.example.com" # 自动转换为 ws://monitor.example.com/api/agent/ws
 secret: "my-secure-secret-token"
 interval: 2  # 上报间隔(秒)
 debug: false
@@ -87,7 +92,7 @@ agent/
 │   │   ├── host.go     # 主机信息采集
 │   │   └── load.go     # 负载采集
 │   ├── sender/         # 发送逻辑包
-│   │   └── http_client.go
+│   │   └── websocket_client.go # WebSocket 客户端实现
 │   └── config/         # 配置加载
 ├── go.mod
 ├── go.sum
