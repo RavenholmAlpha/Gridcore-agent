@@ -5,7 +5,7 @@ const { Op } = require('sequelize');
 const getServers = async (req, res) => {
   try {
     const servers = await Server.findAll({
-      attributes: ['id', 'uuid', 'name', 'os_info', 'status', 'last_seen', 'cpu_cores', 'ram_total'],
+      attributes: ['id', 'uuid', 'name', 'remark', 'os_info', 'status', 'last_seen', 'cpu_cores', 'ram_total'],
       order: [['status', 'DESC'], ['id', 'ASC']], // Online first
     });
 
@@ -135,7 +135,15 @@ const deleteNode = async (req, res) => {
 // Verify Admin Secret
 const verifySecret = async (req, res) => {
   try {
-    const { password } = req.body;
+    console.log('Verify Secret Request Body:', req.body);
+    console.log('Env Secret:', process.env.SECRET);
+    const { password } = req.body || {}; // Safety fallback
+    
+    if (!process.env.SECRET) {
+      console.error('SERVER ERROR: SECRET not configured in .env');
+      return res.status(500).json({ code: 500, message: 'Server configuration error' });
+    }
+
     if (password === process.env.SECRET) {
       return res.json({ code: 200, message: 'Verified' });
     }
@@ -146,10 +154,32 @@ const verifySecret = async (req, res) => {
   }
 };
 
+// Update server remark
+const updateRemark = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { remark } = req.body;
+
+    const server = await Server.findByPk(id);
+    if (!server) {
+      return res.status(404).json({ code: 404, message: 'Node not found' });
+    }
+
+    server.remark = remark;
+    await server.save();
+
+    return res.json({ code: 200, message: 'Remark updated successfully', data: server });
+  } catch (error) {
+    console.error('Update remark error:', error);
+    return res.status(500).json({ code: 500, message: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   getServers,
   getServerMetrics,
   createNode,
   deleteNode,
   verifySecret,
+  updateRemark,
 };

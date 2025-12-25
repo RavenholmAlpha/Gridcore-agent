@@ -1,7 +1,6 @@
 const { Sequelize } = require('sequelize');
 const path = require('path');
 const fs = require('fs');
-require('dotenv').config();
 
 const dbPath = process.env.DB_PATH || './data/gridcore.db';
 const fullPath = path.resolve(__dirname, '../../', dbPath);

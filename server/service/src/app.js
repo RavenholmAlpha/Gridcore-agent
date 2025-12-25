@@ -4,13 +4,16 @@ const bodyParser = require('body-parser');
 const schedule = require('node-schedule');
 const { Op } = require('sequelize');
 const path = require('path');
-require('dotenv').config();
+const envPath = path.resolve(__dirname, '../.env');
+console.log('Loading .env from:', envPath);
+require('dotenv').config({ path: envPath, quiet: true });
 
 const { initDB, Server, Metric } = require('./models');
 const apiRoutes = require('./routes/apiRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+console.log('Loaded SECRET:', process.env.SECRET ? '******' : 'NOT FOUND');
 
 // Middleware
 app.use(cors());

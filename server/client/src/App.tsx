@@ -24,6 +24,7 @@ const App: React.FC = () => {
       <DetailDrawer 
         serverId={selectedServerId} 
         onClose={() => setSelectedServerId(null)} 
+        canEdit={currentView === 'admin'}
       />
     </>
   );

@@ -149,6 +149,8 @@ const Admin: React.FC<AdminProps> = ({ onServerSelect, onBack }) => {
                 server={server} 
                 onClick={() => onServerSelect(server.id)}
                 onDelete={handleDeleteNode}
+                onUpdate={fetchData}
+                editable={true}
               />
             ))}
           </div>

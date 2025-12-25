@@ -71,6 +71,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onServerSelect, onNavigateToAdmin
                 key={server.id} 
                 server={server} 
                 onClick={() => onServerSelect(server.id)}
+                onUpdate={fetchData}
               />
             ))}
           </div>
