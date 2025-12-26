@@ -7,3 +7,4 @@ agent/*.exe
 server/service/gridcore.db
 server/node_modules
 server/service/data/*.db
+*.db
