@@ -24,6 +24,9 @@ const initWebSocket = (server) => {
 
     // 1. Handle HTTP Upgrade (Auth)
     server.on('upgrade', (request, socket, head) => {
+        // Debug Log for WebSocket Upgrade
+        console.log('WS Upgrade Request:', request.url, request.headers['x-forwarded-proto']);
+
         const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
 
         if (pathname === '/api/agent/ws') {

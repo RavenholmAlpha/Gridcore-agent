@@ -13,6 +13,10 @@ const apiRoutes = require('./routes/apiRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Trust Cloudflare/Proxy (Fix for Flexible SSL)
+app.set('trust proxy', 1);
+
 console.log('Loaded SECRET:', process.env.SECRET ? '******' : 'NOT FOUND');
 
 // Middleware
