@@ -12,7 +12,6 @@ const { initDB, Server, Metric } = require('./models');
 const apiRoutes = require('./routes/apiRoutes');
 
 const app = express();
-app.enable('trust proxy'); // Enable trust proxy for Cloudflare
 const PORT = process.env.PORT || 3000;
 console.log('Loaded SECRET:', process.env.SECRET ? '******' : 'NOT FOUND');
 
